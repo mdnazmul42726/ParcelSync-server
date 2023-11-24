@@ -19,6 +19,12 @@ async function run() {
 
         const userCollection = client.db("assignment_12_DB").collection("users");
 
+        app.get('/user/v1', async (req, res) => {
+            const query = { email: req.query.email };
+            const result = await userCollection.findOne(query);
+            res.send(result)
+        });
+
         app.post('/users/v1', async (req, res) => {
             const user = req.body;
             const query = { email: req.body.email };
