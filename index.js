@@ -18,6 +18,7 @@ async function run() {
         await client.connect();
 
         const userCollection = client.db("assignment_12_DB").collection("users");
+        const bookCollection = client.db("assignment_12_DB").collection("books");
 
         app.get('/user/v1', async (req, res) => {
             const query = { email: req.query.email };
@@ -33,6 +34,12 @@ async function run() {
                 return res.send({ message: 'user Exist' })
             };
             const result = userCollection.insertOne(user);
+            res.send(result);
+        });
+
+        app.post('/book/v1', async (req, res) => {
+            const bookData = req.body;
+            const result = await bookCollection.insertOne(bookData);
             res.send(result);
         });
 
