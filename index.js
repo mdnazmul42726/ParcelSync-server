@@ -26,6 +26,12 @@ async function run() {
             res.send(result)
         });
 
+        app.get('/books/v1', async (req, res) => {
+            const query = { senderEmail: req.query.email };
+            const result = await bookCollection.find(query).toArray();
+            res.send(result);
+        });
+
         app.post('/users/v1', async (req, res) => {
             const user = req.body;
             const query = { email: req.body.email };
