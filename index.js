@@ -27,7 +27,15 @@ async function run() {
         });
 
         app.get('/books/v1', async (req, res) => {
-            const query = { senderEmail: req.query.email };
+            const result = await bookCollection.find().toArray();
+            res.send(result)
+        })
+
+        app.get('/books/v1', async (req, res) => {
+            let query = { senderEmail: req.query.email }
+            if (req.query.status) {
+                query = { senderEmail: req.query.email, status: req.query.status }
+            };
             const result = await bookCollection.find(query).toArray();
             res.send(result);
         });
@@ -99,6 +107,13 @@ async function run() {
             };
             const result = await bookCollection.updateOne(filter, updatedDoc, options);
             res.send(result)
+        });
+
+        app.delete('/book/delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await bookCollection.deleteOne(filter);
+            res.send(result);
         });
 
         await client.db("admin").command({ ping: 1 });
