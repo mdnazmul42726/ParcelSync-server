@@ -32,6 +32,13 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/book/edit/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await bookCollection.findOne(query);
+            res.send(result);
+        })
+
         app.post('/users/v1', async (req, res) => {
             const user = req.body;
             const query = { email: req.body.email };
@@ -49,10 +56,14 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/book/edit/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
-            const result = await bookCollection.findOne(query);
+        app.patch('/book/update/v1/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: { status: 'Cancelled' }
+            };
+            const result = await bookCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         })
 
