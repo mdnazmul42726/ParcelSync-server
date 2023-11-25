@@ -65,7 +65,41 @@ async function run() {
             };
             const result = await bookCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+        });
+
+        app.patch('/user/update', async (req, res) => {
+            const email = req.query.email;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: { name: req.body.name, gender: req.body.gender, currentAddress: req.body.currentAddress, permanentAddress: req.body.permanentAddress, contactNumber: req.body.contactNumber }
+            };
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
         })
+
+        app.patch('/book/item/update', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    senderPhoneNumber: req.body.senderPhoneNumber,
+                    parcelType: req.body.parcelType,
+                    parcelWeight: req.body.parcelWeight,
+                    RequestedDeliveryDate: req.body.RequestedDeliveryDate,
+                    receiverEmail: req.body.receiverEmail,
+                    receiverName: req.body.receiverName,
+                    ReceiverPhoneNumber: req.body.ReceiverPhoneNumber,
+                    deliveryAddress: req.body.deliveryAddress,
+                    deliveryAddressLatitude: req.body.deliveryAddressLatitude,
+                    deliveryAddressLongitude: req.body.deliveryAddressLongitude,
+                    price: req.body.price,
+                }
+            };
+            const result = await bookCollection.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        });
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
