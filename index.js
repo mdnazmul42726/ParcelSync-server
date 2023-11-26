@@ -138,7 +138,18 @@ async function run() {
             };
             const result = await userCollection.updateOne(filter, updatedDoc);
             res.send(result)
-        })
+        });
+
+        app.patch('/book/admin/assign/v1', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: { deliveryMan: req.body.deliveryMan, approximateDeliveryDate: req.body.approximateDeliveryDate, status: req.body.status }
+            };
+            const result = await bookCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
 
         app.delete('/book/delete/:id', async (req, res) => {
             const id = req.params.id;
