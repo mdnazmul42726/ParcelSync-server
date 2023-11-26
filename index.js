@@ -19,6 +19,7 @@ async function run() {
 
         const userCollection = client.db("assignment_12_DB").collection("users");
         const bookCollection = client.db("assignment_12_DB").collection("books");
+        const reviewCollection = client.db("assignment_12_DB").collection("reviews");
 
         app.get('/users/v1', async (req, res) => {
             const result = await userCollection.find().toArray();
@@ -89,6 +90,12 @@ async function run() {
             const bookData = req.body;
             const result = await bookCollection.insertOne(bookData);
             res.send(result);
+        });
+
+        app.post('/review/v1', async (req, res) => {
+            const data = req.body;
+            const result = await reviewCollection.insertOne(data);
+            res.send(result)
         });
 
         app.patch('/book/update/v1/:id', async (req, res) => {
