@@ -68,6 +68,12 @@ async function run() {
 
         });
 
+        app.get('/delivery-man/items', async (req, res) => {
+            const query = { deliveryMan: req.query.email };
+            const result = await bookCollection.find(query).toArray();
+            res.send(result);
+        });
+
         app.post('/users/v1', async (req, res) => {
             const user = req.body;
             const query = { email: req.body.email };
@@ -148,6 +154,16 @@ async function run() {
                 $set: { deliveryMan: req.body.deliveryMan, approximateDeliveryDate: req.body.approximateDeliveryDate, status: req.body.status }
             };
             const result = await bookCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        app.patch('/book/delivery-man/status', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: { status: req.query.status }
+            };
+            const result = await bookCollection.updateOne(filter, updatedDoc);
             res.send(result);
         });
 
