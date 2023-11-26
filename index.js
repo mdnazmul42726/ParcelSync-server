@@ -20,6 +20,11 @@ async function run() {
         const userCollection = client.db("assignment_12_DB").collection("users");
         const bookCollection = client.db("assignment_12_DB").collection("books");
 
+        app.get('/users/v1', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result)
+        })
+
         app.get('/books/count/v1', async (req, res) => {
             const booked = await bookCollection.find().toArray();
             const delivered = booked.filter(item => item.status == 'Delivered');
@@ -61,7 +66,7 @@ async function run() {
             const result = await userCollection.find(query).toArray();
             res.send(result);
 
-        })
+        });
 
         app.post('/users/v1', async (req, res) => {
             const user = req.body;
@@ -124,6 +129,16 @@ async function run() {
             const result = await bookCollection.updateOne(filter, updatedDoc, options);
             res.send(result)
         });
+
+        app.patch('/user/role/v1', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: { accType: req.query.role }
+            };
+            const result = await userCollection.updateOne(filter, updatedDoc);
+            res.send(result)
+        })
 
         app.delete('/book/delete/:id', async (req, res) => {
             const id = req.params.id;
