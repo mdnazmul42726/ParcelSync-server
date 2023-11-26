@@ -20,16 +20,25 @@ async function run() {
         const userCollection = client.db("assignment_12_DB").collection("users");
         const bookCollection = client.db("assignment_12_DB").collection("books");
 
+        app.get('/books/count/v1', async (req, res) => {
+            const booked = await bookCollection.find().toArray();
+            const delivered = booked.filter(item => item.status == 'Delivered');
+            const totalDelivered = delivered.length
+            const totalBookedCount = await bookCollection.estimatedDocumentCount();
+            const totalUser = await userCollection.estimatedDocumentCount();
+            res.send({ totalBookedCount, totalDelivered, totalUser });
+        });
+
         app.get('/user/v1', async (req, res) => {
             const query = { email: req.query.email };
             const result = await userCollection.findOne(query);
             res.send(result)
         });
 
-        app.get('/books/v1', async (req, res) => {
+        app.get('/books/v2', async (req, res) => {
             const result = await bookCollection.find().toArray();
             res.send(result)
-        })
+        });
 
         app.get('/books/v1', async (req, res) => {
             let query = { senderEmail: req.query.email }
@@ -45,6 +54,13 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const result = await bookCollection.findOne(query);
             res.send(result);
+        });
+
+        app.get('/user/delivery-man', async (req, res) => {
+            const query = { accType: 'Delivery Man' };
+            const result = await userCollection.find(query).toArray();
+            res.send(result);
+
         })
 
         app.post('/users/v1', async (req, res) => {
