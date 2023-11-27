@@ -3,15 +3,32 @@ const cors = require('cors');
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json())
 
-
 const uri = `mongodb+srv://${process.env.DB_USER}:kB9BxRKOeKO2r1oV@cluster0.nfeux5q.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } });
+
+function verifyToken(req, res, next) {
+    const accessToken = req.headers.authorization;
+
+    if (!accessToken) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' });
+        } else {
+            req.decoded = decoded
+            next();
+        }
+    })
+};
 
 async function run() {
     try {
@@ -21,10 +38,16 @@ async function run() {
         const bookCollection = client.db("assignment_12_DB").collection("books");
         const reviewCollection = client.db("assignment_12_DB").collection("reviews");
 
-        app.get('/users/v1', async (req, res) => {
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+            res.send({ token: token })
+        });
+
+        app.get('/users/v1', verifyToken, async (req, res) => {
             const result = await userCollection.find().toArray();
-            res.send(result)
-        })
+            res.send(result);
+        });
 
         app.get('/books/count/v1', async (req, res) => {
             const booked = await bookCollection.find().toArray();
@@ -43,7 +66,7 @@ async function run() {
 
         app.get('/books/v2', async (req, res) => {
             const result = await bookCollection.find().toArray();
-            res.send(result)
+            res.send(result);
         });
 
         app.get('/books/v1', async (req, res) => {
