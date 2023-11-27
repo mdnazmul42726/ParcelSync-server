@@ -24,7 +24,7 @@ function verifyToken(req, res, next) {
         if (err) {
             return res.status(403).send({ message: 'forbidden access' });
         } else {
-            req.decoded = decoded
+            req.decoded = decoded;
             next();
         }
     })
@@ -38,13 +38,37 @@ async function run() {
         const bookCollection = client.db("assignment_12_DB").collection("books");
         const reviewCollection = client.db("assignment_12_DB").collection("reviews");
 
+        async function verifyAdmin(req, res, next) {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const isAdmin = user.accType == 'Admin';
+            if (!isAdmin) {
+                return res.status(403).send({ message: 'forbidden access' });
+            } else {
+                next();
+            };
+        };
+
+        async function verifyDeliveryMan(req, res, next) {
+            const email = req.decoded.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            const isDeliveryMan = user.accType = 'Delivery Man';
+            if (!isDeliveryMan) {
+                return res.status(403).send({ message: 'forbidden access' });
+            } else {
+                next();
+            };
+        }
+
         app.post('/jwt', async (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             res.send({ token: token })
         });
 
-        app.get('/users/v1', verifyToken, async (req, res) => {
+        app.get('/users/v1', verifyToken, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
@@ -64,7 +88,7 @@ async function run() {
             res.send(result)
         });
 
-        app.get('/books/v2', async (req, res) => {
+        app.get('/books/v2', verifyToken, async (req, res) => {
             const result = await bookCollection.find().toArray();
             res.send(result);
         });
@@ -85,20 +109,20 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/user/delivery-man', async (req, res) => {
+        app.get('/user/delivery-man', verifyToken, verifyAdmin, async (req, res) => {
             const query = { accType: 'Delivery Man' };
             const result = await userCollection.find(query).toArray();
             res.send(result);
 
         });
 
-        app.get('/delivery-man/items', async (req, res) => {
+        app.get('/delivery-man/items', verifyToken, verifyDeliveryMan, async (req, res) => {
             const query = { deliveryMan: req.query.email };
             const result = await bookCollection.find(query).toArray();
             res.send(result);
         });
 
-        app.get('/review/v1', async (req, res) => {
+        app.get('/review/v1', verifyToken, verifyDeliveryMan, async (req, res) => {
             const email = req.query.email;
             const query = { deliverManEmail: email };
             const result = await reviewCollection.find(query).toArray();
