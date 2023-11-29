@@ -37,6 +37,7 @@ async function run() {
         const userCollection = client.db("assignment_12_DB").collection("users");
         const bookCollection = client.db("assignment_12_DB").collection("books");
         const reviewCollection = client.db("assignment_12_DB").collection("reviews");
+        const contactCollection = client.db("assignment_12_DB").collection("contacts");
 
         async function verifyAdmin(req, res, next) {
             const email = req.decoded.email;
@@ -69,7 +70,9 @@ async function run() {
         });
 
         app.get('/users/v1', verifyToken, verifyAdmin, async (req, res) => {
-            const result = await userCollection.find().toArray();
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
+            const result = await userCollection.find().skip(page * size).limit(size).toArray();
             res.send(result);
         });
 
@@ -129,6 +132,16 @@ async function run() {
             res.send(result)
         });
 
+        app.get('/total-users', async (req, res) => {
+            const count = await userCollection.estimatedDocumentCount();
+            res.send({ count })
+        });
+
+        app.get('/contacts', verifyToken, verifyAdmin, async (req, res) => {
+            const result = await contactCollection.find().toArray();
+            res.send(result)
+        })
+
         app.post('/users/v1', async (req, res) => {
             const user = req.body;
             const query = { email: req.body.email };
@@ -149,6 +162,12 @@ async function run() {
         app.post('/review/v1', async (req, res) => {
             const data = req.body;
             const result = await reviewCollection.insertOne(data);
+            res.send(result)
+        });
+
+        app.post('/contact', async (req, res) => {
+            const data = req.body;
+            const result = await contactCollection.insertOne(data);
             res.send(result)
         });
 
@@ -232,6 +251,13 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const result = await bookCollection.deleteOne(filter);
+            res.send(result);
+        });
+
+        app.delete('/contact/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await contactCollection.deleteOne(query);
             res.send(result);
         });
 
