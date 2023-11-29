@@ -32,7 +32,7 @@ function verifyToken(req, res, next) {
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
 
         const userCollection = client.db("assignment_12_DB").collection("users");
         const bookCollection = client.db("assignment_12_DB").collection("books");
